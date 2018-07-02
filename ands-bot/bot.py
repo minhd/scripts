@@ -13,14 +13,14 @@ def sync(id):
         with open('./logs/'+str(id)+'.json', 'w') as f:
             f.write(contents)
     except urllib2.HTTPError as err:
-        print "err: " + url + " : " + str(err.code)
+        print "err: " + url + " : " + str(err.code) + " reason: " + str(err.reason)
 
 def graph(id):
     url = api_url+str(id)+'/graph'
     try:
         urllib2.urlopen(url).read()
     except urllib2.HTTPError as err:
-        print "err: " + url + " : " + str(err.code)
+        print "err: " + url + " : " + str(err.code) + " reason: " + str(err.reason)
 
 def crawl(url, offset = 0, pp = 1000):
 
@@ -69,7 +69,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--workflow', help='workflow', default='SyncWorkflow')
+    parser.add_argument('--threads', help='threads count', default=threads_count)
     args = parser.parse_args()
+
+    threads_count = int(args.threads)
 
     print "syncing {num} records with workflow: {workflow}, threads: {threads_count}".format(
         num=len(ids),
