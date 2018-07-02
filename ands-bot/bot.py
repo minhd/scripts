@@ -5,9 +5,10 @@ import os, pickle, argparse, tqdm, time, json, urllib2
 api_url = 'https://test.ands.org.au/api/registry/records/'
 id_cache = 'ids.txt'
 threads_count = 8
+workflow = 'SyncWorkflow'
 
 def sync(id):
-    url = api_url+str(id)+'/sync'
+    url = api_url+str(id)+'/sync/?workflow='+str(workflow)
     try:
         contents = urllib2.urlopen(url).read()
         with open('./logs/'+str(id)+'.json', 'w') as f:
@@ -70,16 +71,22 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--workflow', help='workflow', default='SyncWorkflow')
     parser.add_argument('--threads', help='threads count', default=threads_count)
+    parser.add_argument('-y', help="yes all", default=False, action='store_true')
     args = parser.parse_args()
 
     threads_count = int(args.threads)
+    workflow = args.workflow
 
     print "syncing {num} records with workflow: {workflow}, threads: {threads_count}".format(
         num=len(ids),
-        workflow=args.workflow,
+        workflow=workflow,
         threads_count = threads_count
         )
-    proceed = ask()
+
+    proceed = args.y
+    if not proceed:
+        proceed = ask()
+
     if proceed:
         pool = ThreadPool(threads_count)
         for _ in tqdm.tqdm(pool.imap(sync, ids), total=len(ids)):
