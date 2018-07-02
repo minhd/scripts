@@ -1,9 +1,8 @@
 import os, pickle
 import config
 
-id_cache = config.id_cache
-
 def crawl(url, offset = 0, pp = 1000):
+    id_cache = config.id_cache
     if os.path.isfile(id_cache):
         with open(id_cache) as f:
             ids = pickle.load(f)
@@ -29,7 +28,9 @@ def fetch_json(url):
     data = json.loads(contents)
     return data
 
-def ask():
+def ask(skip):
+    if skip:
+        return True
     print "proceed? [Y/n]:"
     choice = raw_input().lower()
     if choice in {'yes','y', 'ye', ''}:

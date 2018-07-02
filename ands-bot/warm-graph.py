@@ -28,14 +28,9 @@ if __name__ == "__main__":
         threads_count = threads_count
         )
 
-    proceed = args.y
-    if not proceed:
-        proceed = lib.ask()
-
-    if proceed:
+    if lib.ask(args.y):
         pool = ThreadPool(threads_count)
         for _ in tqdm.tqdm(pool.imap(graph, ids), total=len(ids)):
             pass
 
-    end = time.time()
-    print "Finished. Took: " + str(end-start) + "s"
+    print "Finished. Took: " + str(time.time()-start) + "s"
