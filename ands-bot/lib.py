@@ -1,4 +1,4 @@
-import os, pickle
+import os, pickle, urllib2, json
 import config
 
 def crawl(url, offset = 0, pp = 1000):
@@ -22,8 +22,24 @@ def crawl(url, offset = 0, pp = 1000):
 
     return ids
 
+def load_ids():
+    id_cache = config.id_cache
+    if os.path.isfile(id_cache):
+        with open(id_cache) as f:
+            ids = pickle.load(f)
+            print "ids loaded from ids.txt "+str(len(ids))+" records"
+            return ids
+    else:
+        return False
+
+def save_ids(ids):
+    id_cache = config.id_cache
+    with open(id_cache, 'w') as f:
+        pickle.dump(ids, f)
+        print "ids written to " + id_cache
+
 def fetch_json(url):
-    print url
+    print "Fetching: " + url
     contents = urllib2.urlopen(url).read()
     data = json.loads(contents)
     return data
@@ -40,5 +56,5 @@ def ask(skip):
     else:
        sys.stdout.write("Please respond with 'yes' or 'no'")
 
-def handle_err(err):
+def handle_err(err, url = ""):
     print "err: " + url + " : " + str(err.code) + " reason: " + str(err.reason)

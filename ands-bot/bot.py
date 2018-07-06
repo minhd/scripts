@@ -9,7 +9,7 @@ def sync(id):
         with open('./logs/'+str(id)+'.json', 'w') as f:
             f.write(contents)
     except urllib2.HTTPError as err:
-        lib.handle_err(err)
+        lib.handle_err(err, url)
 
 if __name__ == "__main__":
     start = time.time()
