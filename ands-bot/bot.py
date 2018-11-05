@@ -1,27 +1,53 @@
+import argparse
+import time
+import tqdm
+import urllib2
 from multiprocessing.dummy import Pool as ThreadPool
-import os, pickle, argparse, tqdm, time, json, urllib2
-import lib,config
+import config
+import lib
+import db
 
-def sync(id):
-    url = config.api_url+str(id)+'/sync/?workflow='+str(workflow)
+
+def write_result(ro_id, contents):
+    with open('./logs/'+str(ro_id)+'.json', 'w') as f:
+        f.write(contents)
+
+
+def sync(ro_id):
+    url = config.api_url+str(ro_id)+'/sync/?workflow='+str(workflow)
+    print url
     try:
+        start = time.time()
         contents = urllib2.urlopen(url).read()
-        with open('./logs/'+str(id)+'.json', 'w') as f:
-            f.write(contents)
+        db.touch(ro_id, time.time() - start)
+        write_result(ro_id, contents)
     except urllib2.HTTPError as err:
         lib.handle_err(err, url)
 
-if __name__ == "__main__":
-    start = time.time()
 
-    print "fetching"
-    ids = lib.crawl(config.api_url, 0, 10000)
+def fetch():
+    not_done = db.not_done()
+    if len(not_done) > 0:
+        return not_done
+    lib.crawl(config.api_url, 0, 10000)
 
+
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--workflow', help='workflow', default=config.workflow)
     parser.add_argument('--threads', help='threads count', default=config.threads_count)
     parser.add_argument('-y', help="yes all", default=False, action='store_true')
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    """
+    usage: python bot.py --threads=2 --workflow=SyncWorkflow
+    """
+    start = time.time()
+
+    ids = fetch()
+    args = parse_args()
 
     threads_count = int(args.threads)
     workflow = args.workflow
@@ -29,8 +55,8 @@ if __name__ == "__main__":
     print "syncing {num} records with workflow: {workflow}, threads: {threads_count}".format(
         num=len(ids),
         workflow=workflow,
-        threads_count = threads_count
-        )
+        threads_count=threads_count
+    )
 
     if lib.ask(args.y):
         pool = ThreadPool(threads_count)

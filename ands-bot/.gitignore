@@ -1,3 +1,5 @@
 logs
 ids.txt
 *.pyc
+database.sqlite
+.idea

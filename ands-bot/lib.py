@@ -1,5 +1,5 @@
 import os, pickle, urllib2, json
-import config
+import config, db
 
 def crawl(url, offset = 0, pp = 1000):
     id_cache = config.id_cache
@@ -14,12 +14,12 @@ def crawl(url, offset = 0, pp = 1000):
         data = fetch_json(url+'?limit='+str(pp)+'&offset='+str(offset))
         for i in data:
             ids.append(i['registry_object_id'])
+            db.insert(i['registry_object_id'])
         offset += pp
     # write ids to file
     with open(id_cache, 'w') as f:
         pickle.dump(ids, f)
         print "ids written to " + id_cache
-
     return ids
 
 def load_ids():
